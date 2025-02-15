@@ -54,6 +54,6 @@ public class PBarrier : MonoBehaviour
         _barrier.SetActive(false);
     }
     private bool CanNotBarrier(){
-        return _player.IsJump||_aB.IsAttack;
+        return _player.IsJump||_aB.IsAttack||_player.IsGuard;
     }
 }

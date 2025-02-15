@@ -80,7 +80,7 @@ public class Enemy03 : MonoBehaviour,IMove
         if(stateTimer<=0f){
         InvicibleMode(false);
         _sr.sprite=_enemySp;
-        Debug.Log("Attack!");
+        
 
         TransitionToState(State.Cooldown, 1f); // 攻撃後1秒隙
         }
@@ -115,7 +115,7 @@ public class Enemy03 : MonoBehaviour,IMove
     {
         currentState = newState;
         stateTimer = timer;
-        Debug.Log($"State changed to: {newState}");
+        
     }
     private void InvicibleMode(bool isDive){
         foreach (var collider in _pColliders){

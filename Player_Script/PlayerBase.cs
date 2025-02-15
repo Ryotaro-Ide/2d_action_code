@@ -5,7 +5,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 public class PlayerBase : MonoBehaviour
-{
+{   
+    
     [SerializeField, Header("移動速度")]
     private float _moveSpeed;
     private float _firstSpeed;
@@ -28,10 +29,9 @@ public class PlayerBase : MonoBehaviour
     private bool _isGuard=false;
     private bool _isBarrier=false;
     private bool _isBarrierExpand=false;
-    private bool _isLookUp=false;
-    private bool _isLookDown=false;
-    
-    private bool _isUmbrellaOpened=false;
+    private bool _isOnLadder=false;
+    private bool _isLadderMove=false;
+    private bool _isUmbrellaOpened=false; 
     private HP_Player _hpPlayer;
     private SpriteRenderer _sr;
     private BoxCollider2D _collider;
@@ -41,22 +41,41 @@ public class PlayerBase : MonoBehaviour
     private AttackBase _aB;
     private float _rayYOffset = 0.1f;
     private Animator _anim;
-
+    public RuntimeAnimatorController _defaultController;
+    public AnimatorOverrideController _overrideController;
     public bool IsJump{
-        get=>_bJump;}
+        get=>_bJump;
+        set{_bJump=value;}}
     public bool IsDash{
         get=>_isDash;}
+
+    public bool IsSquat{
+        get=>_isSquat;
+        set{_isSquat=value;}
+    }
     public bool IsGuard{
         get=>_isGuard;
         set{_isGuard=value;}}
+
     public bool IsBarrier{
         get=>_isBarrier;
         set{_isBarrier=value;}}
+
     public bool IsBarrierExpand{
         get=>_isBarrierExpand;
         set{_isBarrierExpand=value;}}
+
+    public bool IsOnLadder{
+        get=>_isOnLadder;
+        set{_isOnLadder=value;}}
+
+    public bool IsLadderMove{
+        get=>_isLadderMove;
+        set{_isLadderMove=value;}}
+
     public bool IsUmbrellaOpened{
         get=>_isUmbrellaOpened;}
+
     protected virtual void Awake(){
 
     }
@@ -72,7 +91,8 @@ public class PlayerBase : MonoBehaviour
         _pG=GetComponent<PGuard>();
         _pB=FindObjectOfType<PBarrier>();
         _aB=GetComponent<AttackBase>();
-        _bJump = false; 
+        _bJump = false;
+        _anim.runtimeAnimatorController = _defaultController;
         Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"),LayerMask.NameToLayer("Enemy"),false);
         
     }
@@ -90,26 +110,28 @@ public class PlayerBase : MonoBehaviour
             _TMPspeed=_firstSpeed;
         }
         
-        _HitFloor();
+        HitFloor();
         HitSlope();
+        IsGroundHere();
         FloatingFall(_isUmbrellaOpened);
         
       
     }
-    
-    private void OnCollisionEnter2D(Collision2D collision){
-    
-    }
-   
+ 
+ 
+private void OnCollisionExit2D(Collision2D other) {  
+    _bJump=true;
+}    
+
 private void CheckSurface(string layerName, bool isSlope)
 {
     int layerMask = LayerMask.GetMask(layerName);
-    Vector2 rayOrigin = (Vector2)transform.position + _collider.offset + new Vector2(0, -_collider.size.y / 2);
-    RaycastHit2D rayHit = Physics2D.BoxCast(rayOrigin, _collider.size, 0.0f, Vector2.down, _rayYOffset, layerMask);
-    if (rayHit.collider != null && _rb.velocity.y < 0f)
+    Vector2 rayOrigin = (Vector2)transform.position + _collider.offset + new Vector2(0, -_collider.size.y / 2.4f);
+    RaycastHit2D rayHit = Physics2D.BoxCast(rayOrigin,new Vector3(_collider.size.x/2f, 0.08f, 1), 0.0f, Vector2.down, _rayYOffset, layerMask);
+    if (rayHit.collider != null&&_rb.velocity.y<=0)
     {
-        _bJump = false;
-        _anim.SetBool("isJump", false);
+        _bJump=false;
+        if(!_aB.IsAttack) _anim.SetBool("isJump", false);
         if(_isDash){
             _anim.SetBool("isDash",true);
         }
@@ -127,17 +149,17 @@ private void CheckSurface(string layerName, bool isSlope)
         }
     }
 }
-
-private void _HitFloor()
+private void HitFloor()
 {
     CheckSurface("Floor", false);
 }
-
 private void HitSlope()
 {
     CheckSurface("Slope", true);
 }
-    
+private void IsGroundHere(){
+
+}    
 
     private void OnDrawGizmos()
     {
@@ -146,10 +168,10 @@ private void HitSlope()
         Gizmos.color = Color.blue;
 
         // BoxCollider2Dの底部中央を起点としたGizmoの開始位置
-        Vector2 gizmoOrigin = (Vector2)transform.position + _collider.offset + new Vector2(0, -_collider.size.y / 2);
+        Vector2 gizmoOrigin = (Vector2)transform.position + _collider.offset + new Vector2(0, -_collider.size.y / 2.4f);
 
         // GizmoでBoxCastと同じ範囲を表示
-        Gizmos.DrawWireCube(gizmoOrigin + Vector2.down * _rayYOffset, new Vector3(_collider.size.x, 0.1f, 1));
+        Gizmos.DrawWireCube(gizmoOrigin + Vector2.down * _rayYOffset, new Vector3(_collider.size.x/2f, 0.08f, 1));
     }
     public void KnockBack(GameObject enemy){
         KnockBackC _knockback=FindObjectOfType<KnockBackC>();
@@ -170,14 +192,10 @@ private void HitSlope()
         Time.timeScale=1;
         Destroy(gameObject);
     }
-   
-    
-    
-    
-
     public void _OnJump(InputAction.CallbackContext context)
     {
         if (!context.performed || _bJump||_isGuard||_isBarrier||_aB.IsAttack) return;
+        _isLadderMove=false;
         _bJump=true;
         _rb.bodyType=RigidbodyType2D.Dynamic;
         _isSlopeWalk=false;
@@ -202,63 +220,51 @@ private void HitSlope()
         
     }
     
-   public void _OnSquat(InputAction.CallbackContext context)
-    {
-        if (context.performed&&!_bJump) // しゃがみキーが押されたとき
-        {
-            StartSquat();
-            _anim.SetBool("isSquat",true);
-        }
-        else if (context.canceled) // しゃがみキーが離されたとき
-        {
-            StopSquat();
-            _anim.SetBool("isSquat",false);
+   
 
-        }
-    }
-
-    public void _OnLookUp(InputAction.CallbackContext context){
-        if(context.performed){
-            _isLookUp=true;
-            
-        }else if(context.canceled){
-            _isLookUp=false;
-        }    
-    }
-    public void _OnLookDown(InputAction.CallbackContext context){
-        if(context.performed&&_bJump){
-            _isLookDown=true;
-            
-        }else if(context.canceled){
-            _isLookDown=false;
-        } 
-    }
     
     
-    private void StartSquat()
+    public void _OnUmbrellaSwitch(InputAction.CallbackContext context)
+{
+    if (_aB.IsAttack) return;
+
+    _isUmbrellaOpened = !_isUmbrellaOpened;
+
+    // 現在のAnimatorパラメータを保存
+    AnimatorControllerParameter[] parameters = _anim.parameters;
+    Dictionary<string, object> paramValues = new Dictionary<string, object>();
+
+    foreach (var param in parameters)
     {
-        _isSquat = true;
-
+        if (param.type == AnimatorControllerParameterType.Bool)
+            paramValues[param.name] = _anim.GetBool(param.name);
+        else if (param.type == AnimatorControllerParameterType.Float)
+            paramValues[param.name] = _anim.GetFloat(param.name);
+        else if (param.type == AnimatorControllerParameterType.Int)
+            paramValues[param.name] = _anim.GetInteger(param.name);
     }
 
-    private void StopSquat()
+    // AnimatorController を切り替え
+    _anim.runtimeAnimatorController = _isUmbrellaOpened ? _overrideController : _defaultController;
+
+    // パラメータを復元
+    foreach (var param in paramValues)
     {
-        _isSquat = false;
+        if (param.Value is bool)
+            _anim.SetBool(param.Key, (bool)param.Value);
+        else if (param.Value is float)
+            _anim.SetFloat(param.Key, (float)param.Value);
+        else if (param.Value is int)
+            _anim.SetInteger(param.Key, (int)param.Value);
+    }
+}
 
-    }
-    public void _OnUmbrellaSwitch(InputAction.CallbackContext context){
-        _isUmbrellaOpened=!_isUmbrellaOpened;
-        
-        if(_isUmbrellaOpened){
-            AnimParameterReset();
-            _anim.SetBool("isOpen",true);
-        }else{
-            _anim.SetBool("isOpen",false);
-        }
-    }
     private void FloatingFall(bool _isUmbrellaOpened)
 {
-    if (_isUmbrellaOpened && _rb.velocity.y < 0 && _bJump) // 傘が開いており、下降中でジャンプ状態
+    if(_isLadderMove){
+        _rb.gravityScale=0;
+    }
+    else if (_isUmbrellaOpened && _rb.velocity.y < 0 && _bJump) // 傘が開いており、下降中でジャンプ状態
     {
         _rb.gravityScale = 0.5f;      // 重力を軽くしてゆっくり落下
         _rb.drag = 2.0f;              // 空気抵抗を増加させて浮遊感を出す
@@ -266,7 +272,7 @@ private void HitSlope()
     else if (_isUmbrellaOpened && _rb.velocity.y >= 0 && _bJump) // 傘が開いており、上昇中
     {
         _rb.gravityScale = 2.0f;      // 上昇時の重力を少し強める
-        _rb.drag = 0.0f;              // 空気抵抗を無効化
+        _rb.drag = 0.5f;              // 空気抵抗を無効化
     }
     else // 傘が閉じているとき、または地面についているとき
     {
@@ -281,7 +287,7 @@ private void HitSlope()
         }else if((_isUmbrellaOpened && _rb.velocity.y >= 0 && _bJump)||_isSquat){ //傘開け上昇中orしゃがみ
             return _firstSpeed/1.4f;
         }else if(_isDash&&!_isUmbrellaOpened){ //傘閉じダッシュ
-            return Mathf.Min(_firstSpeed*1.5f,_TMPspeed);
+            return Mathf.Min(_firstSpeed*3.0f,_TMPspeed);
         }else if(_isDash&&_isUmbrellaOpened&&!_bJump){ //傘開けダッシュ
             return Mathf.Min(_firstSpeed*1.4f,_TMPspeed);
         }

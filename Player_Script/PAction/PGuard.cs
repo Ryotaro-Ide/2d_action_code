@@ -75,7 +75,7 @@ public class PGuard : MonoBehaviour
     }
     
     private bool CanNotGuard(){
-        return _player.IsJump||_aB.IsAttack;
+        return _player.IsJump||_aB.IsAttack||_player.IsBarrier;
     }
     
 }

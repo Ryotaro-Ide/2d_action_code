@@ -47,6 +47,7 @@ public class AttackBase : MonoBehaviour
         AttackAreaFlip(); 
     }
     public void OnAttack(InputAction.CallbackContext context){
+        if(CanNotAttack()) return;
         if(_isAttacking&&!_isAttackCharging) return;
         _rb.velocity=Vector3.zero;
         
@@ -57,12 +58,13 @@ public class AttackBase : MonoBehaviour
                 _isAttacking=true;
                 _isAttackCharging=true;
             }else if(context.performed&&_isAttackCharging){ //2秒以降に離した
+                _sr.color=new Color(1.0f,1.0f,1.0f);
                 _anim.SetTrigger("AttackLS");
                 _attackList[1].GetComponent<IAttack>().Attack();
                 _isAttacking=true;
                 _isAttackCharging=false;
             }else if(context.canceled&&_isAttackCharging){ //2秒以前に離した
-                
+                _sr.color=new Color(1.0f,1.0f,1.0f);
                 _anim.SetTrigger("AttackL");
                 _attackList[0].GetComponent<IAttack>().Attack();
                 _isAttacking=true;
@@ -72,12 +74,12 @@ public class AttackBase : MonoBehaviour
             if(context.started){
                 _anim.SetTrigger("AttackLAir");
                 _attackList[3].GetComponent<IAttack>().Attack(); 
-                
+                _isAttacking=true;
             }
         
         }else if(!_player.IsJump&&_player.IsDash){
             if(context.started){ //0秒後
-                _sr.color=new Color(1.0f,0.7f,1.0f);
+                _sr.color=new Color(1.0f,1.0f,1.0f);
                 _anim.SetTrigger("AttackLD");
                 _attackList[2].GetComponent<IAttack>().Attack();
                 _isAttacking=true;

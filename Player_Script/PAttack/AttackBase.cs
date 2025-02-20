@@ -13,7 +13,7 @@ public class AttackBase : MonoBehaviour
     public  Rigidbody2D _rb;
     [SerializeField,Header("攻撃一覧")]
     List<GameObject> _attackList=new List<GameObject>();
-    private Energy_Player _ePlayer;
+    private Energy_Player _ep;
     
     
     // Start is called before the first frame update
@@ -25,7 +25,7 @@ public class AttackBase : MonoBehaviour
         _sr=GetComponent<SpriteRenderer>();
         _player=GetComponent<PlayerBase>();
         _rb=GetComponent<Rigidbody2D>();
-        _ePlayer=FindObjectOfType<Energy_Player>();
+        _ep=FindObjectOfType<Energy_Player>();
         foreach (Transform child in transform)
        {
         if(child.gameObject.tag=="Umbrella"){
@@ -51,7 +51,30 @@ public class AttackBase : MonoBehaviour
         if(_isAttacking&&!_isAttackCharging) return;
         _rb.velocity=Vector3.zero;
         
-        if(!_player.IsJump&&!_player.IsDash){
+        
+        if(_player.IsJump){
+            if(context.started){
+                _anim.SetTrigger("AttackLAir");
+                _attackList[5].GetComponent<IAttack>().Attack(); 
+                _isAttacking=true;
+            }
+        
+            }else if(_player.IsDash){
+            if(context.started){ //0秒後
+                
+                _anim.SetTrigger("AttackLD");
+                _attackList[2].GetComponent<IAttack>().Attack();
+                _isAttacking=true;
+            }
+            }else if(_player.IsLookUp){
+                _anim.SetTrigger("AttackLUp");
+                _attackList[3].GetComponent<IAttack>().Attack();
+                _isAttacking=true;
+            }else if(_player.IsSquat){
+                _anim.SetTrigger("AttackLDown");
+                _attackList[4].GetComponent<IAttack>().Attack();
+                _isAttacking=true;        
+            }else{
             if(context.started){ //0秒後
                 _sr.color=new Color(1.0f,0.7f,1.0f);
                 _anim.SetTrigger("AttackLSCharge");
@@ -70,21 +93,7 @@ public class AttackBase : MonoBehaviour
                 _isAttacking=true;
                 _isAttackCharging=false;
             }
-        }else if(_player.IsJump){
-            if(context.started){
-                _anim.SetTrigger("AttackLAir");
-                _attackList[3].GetComponent<IAttack>().Attack(); 
-                _isAttacking=true;
-            }
-        
-        }else if(!_player.IsJump&&_player.IsDash){
-            if(context.started){ //0秒後
-                _sr.color=new Color(1.0f,1.0f,1.0f);
-                _anim.SetTrigger("AttackLD");
-                _attackList[2].GetComponent<IAttack>().Attack();
-                _isAttacking=true;
-            }
-        }
+    }
     }
     public void OnAttackLS(InputAction.CallbackContext context){
        
@@ -110,7 +119,7 @@ public class AttackBase : MonoBehaviour
         return _player._energy-_energyConsume>=0;
     }
     public void AttackEnergyConsume(int _energyAttackPoint){
-        _ePlayer.ConsumeEnergy(_energyAttackPoint);
+        _ep.ConsumeEnergy(_energyAttackPoint);
     }
     private bool CanNotAttack(){
         return _player.IsGuard||_player.IsBarrier||_player._isKnockedBack;

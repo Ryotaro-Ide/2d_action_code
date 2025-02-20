@@ -15,6 +15,9 @@ public class EnemyBase : MonoBehaviour
     private KnockBackC _kB;
     private IMove _iMove;
     public bool _isKnockedBack=false;
+    private bool _isActive = false; // 画面に映っているかどうか
+    private Camera mainCamera;
+
     // Start is called before the first frame update
     private void Awake()
     {
@@ -23,13 +26,17 @@ public class EnemyBase : MonoBehaviour
         _player=FindObjectOfType<PlayerBase>();
         _kB=FindObjectOfType<KnockBackC>();
         _iMove=GetComponent<IMove>();
+        mainCamera=Camera.main;
     }
 
     // Update is called once per frame
     private void Update()
     {
-        if(!_isKnockedBack&&_player!=null){
-        _iMove.Move(_moveSpeed);
+        _isActive = IsVisibleFromCamera();
+
+        if (_isActive && !_isKnockedBack && _player != null)
+        {
+            _iMove.Move(_moveSpeed);
         }
         
     }
@@ -52,6 +59,16 @@ public class EnemyBase : MonoBehaviour
     }
     public void KnockBackGuardToEnemy(GameObject player){ //ガードを受けた
         StartCoroutine(_kB.KnockBackGuardToEnemy(gameObject,player,_isKnockedBack,newbool=>_isKnockedBack=newbool));
+    }
+    private bool IsVisibleFromCamera()
+    {
+        if (mainCamera == null) return false;
+
+        // **オブジェクトの位置をカメラの Viewport 空間に変換**
+        Vector3 viewPos = mainCamera.WorldToViewportPoint(transform.position);
+
+        // **視界内なら true（0〜1の範囲内ならカメラに映っている）**
+        return viewPos.x > 0 && viewPos.x < 1 && viewPos.y > 0 && viewPos.y < 1 && viewPos.z > 0;
     }
 }
 public interface IMove{

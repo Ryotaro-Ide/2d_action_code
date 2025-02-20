@@ -14,10 +14,8 @@ public class PMove : MonoBehaviour
     private AttackBase _aB;
     private PGuard _guard;
     private PlayerBase _pb;
+    private Animator _anim;
     private bool _isWalk=false;
-    
-    private bool _isLookUp=false;
-    private bool _isLookDown=false;
     private void Start() {
 
         _sr=GetComponent<SpriteRenderer>();
@@ -25,6 +23,7 @@ public class PMove : MonoBehaviour
         _aB=GetComponent<AttackBase>();
         _guard=GetComponent<PGuard>();
         _pb=GetComponent<PlayerBase>();
+        _anim=GetComponent<Animator>();
     }
     public void Move(Func<float> SpeedControl)
     {
@@ -96,10 +95,11 @@ public class PMove : MonoBehaviour
     public void _OnLookUp(InputAction.CallbackContext context){
 
         if(context.performed){
-            _isLookUp=true;
-            
+            _pb.IsLookUp=true;
+            _anim.SetBool("isLookUp",true);
         }else if(context.canceled){
-            _isLookUp=false;
+            _anim.SetBool("isLookUp",false);            
+            _pb.IsLookUp=false;
         }    
     }
     
@@ -108,12 +108,12 @@ public class PMove : MonoBehaviour
         if (context.performed&&!_pb.IsJump) // しゃがみキーが押されたとき
         {
             _pb.IsSquat=true;
-            gameObject.GetComponent<Animator>().SetBool("isSquat",true);
+            _anim.SetBool("isSquat",true);
         }
         else if (context.canceled) // しゃがみキーが離されたとき
         {
             _pb.IsSquat=false;
-            gameObject.GetComponent<Animator>().SetBool("isSquat",false);
+            _anim.SetBool("isSquat",false);
 
         }
     }

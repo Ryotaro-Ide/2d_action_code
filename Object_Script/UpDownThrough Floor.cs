@@ -49,9 +49,10 @@ public class UpDownThroughFloor : MonoBehaviour
         if(CheckPlayer()&&_pb.IsSquat){
             Debug.Log("true");
             _collider.isTrigger=true;
-        }else{
-            _collider.isTrigger=false;
         }
+    }
+    private void OnTriggerExit2D(Collider2D other) {
+        _collider.isTrigger=false;
     }
     private void DrawBoxCastDebug(Vector2 origin, Vector2 size, Color color)
 {

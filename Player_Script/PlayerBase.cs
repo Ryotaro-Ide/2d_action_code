@@ -25,6 +25,7 @@ public class PlayerBase : MonoBehaviour
     private bool _isSlopeWalk=false;
     public bool _isKnockedBack=false;
     private bool _isDash=false;
+    private bool _isLookUp=false;
     private bool _isSquat=false;
     private bool _isGuard=false;
     private bool _isBarrier=false;
@@ -48,7 +49,10 @@ public class PlayerBase : MonoBehaviour
         set{_bJump=value;}}
     public bool IsDash{
         get=>_isDash;}
-
+    public bool IsLookUp{
+        get=>_isLookUp;
+        set{_isLookUp=value;}
+    }
     public bool IsSquat{
         get=>_isSquat;
         set{_isSquat=value;}
@@ -111,17 +115,13 @@ public class PlayerBase : MonoBehaviour
         }
         
         HitFloor();
-        HitSlope();
-        IsGroundHere();
         FloatingFall(_isUmbrellaOpened);
         
       
     }
  
  
-private void OnCollisionExit2D(Collision2D other) {  
-    _bJump=true;
-}    
+
 
 private void CheckSurface(string layerName, bool isSlope)
 {
@@ -147,19 +147,16 @@ private void CheckSurface(string layerName, bool isSlope)
         {
             _isSlopeWalk = false;
         }
+    }else if(rayHit.collider == null){
+        
+        _bJump=true;
     }
 }
 private void HitFloor()
 {
     CheckSurface("Floor", false);
 }
-private void HitSlope()
-{
-    CheckSurface("Slope", true);
-}
-private void IsGroundHere(){
 
-}    
 
     private void OnDrawGizmos()
     {
@@ -194,12 +191,12 @@ private void IsGroundHere(){
     }
     public void _OnJump(InputAction.CallbackContext context)
     {
-        if (!context.performed || _bJump||_isGuard||_isBarrier||_aB.IsAttack) return;
+        if (!context.performed || _bJump||_isGuard||_isBarrier||_aB.IsAttack||_isSquat||_isLookUp) return;
         _isLadderMove=false;
         _bJump=true;
         _rb.bodyType=RigidbodyType2D.Dynamic;
         _isSlopeWalk=false;
-        AnimParameterReset();
+        
         
         _anim.SetBool("isJump",true);
         _rb.AddForce(Vector2.up * _jumpSpeed, ForceMode2D.Impulse);
@@ -209,7 +206,7 @@ private void IsGroundHere(){
     public void _OnDash(InputAction.CallbackContext context){
         
         if(context.performed){
-            if(_aB.IsAttack||_bJump||!_pM.IsWalk) return;
+            if(_aB.IsAttack||_bJump||!_pM.IsWalk||_isSquat||_isLookUp) return;
             _isDash=true;
             _anim.SetBool("isDash",true);
             

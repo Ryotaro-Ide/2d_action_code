@@ -6,8 +6,7 @@ using UnityEngine.InputSystem;
 public class PGuard : MonoBehaviour
 {    
     
-    private bool _isDelayGuard=false;
-    private bool _isDamageEase=false;
+    
     private SpriteRenderer _sr;
     private PlayerBase _player;
     private AttackBase _aB;
@@ -20,7 +19,7 @@ public class PGuard : MonoBehaviour
         if(CanNotGuard()) return;
         
         if(context.performed){
-            if(_isDelayGuard) return;
+            if(_player.IsDelayGuard) return;
             Guard();
             _player.IsGuard=true;
             
@@ -38,41 +37,39 @@ public class PGuard : MonoBehaviour
                   //遅延処理
             }
             _sr.color=new Color(0f,0f,1f);
-            _isDamageEase=true;
+            _player.IsDamageEase=true;
             
     }
     private void GuardEnd(){
-        if(_isDelayGuard){ //遅延中なら
+        if(_player.IsDelayGuard){ //遅延中なら
                 
                 StartCoroutine(DelayGuardEnd());
                 return;
             }
             _sr.color=new Color(1f,1f,1f);
-            _isDamageEase=false;
+            _player.IsDamageEase=false;
     }
     private IEnumerator DelayGuardStart(){
-        _isDelayGuard=true;
+        _player.IsDelayGuard=true;
         
         _sr.color=new Color(0.5f,0.5f,1f);
         yield return new WaitForSeconds(0.2f);
-        _isDamageEase=true;
+        _player.IsDamageEase=true;
         
         _sr.color=new Color(0f,0f,1f);
     }
     private IEnumerator DelayGuardEnd(){
-        _isDamageEase=false;
+        _player.IsDamageEase=false;
         _sr.color=new Color(0.5f,0.5f,1f);
         yield return new WaitForSeconds(0.2f);
-        _isDelayGuard=false;
+        _player.IsDelayGuard=false;
         _sr.color=new Color(1f,1f,1f);
     }
     
     private void Update() {
         
     }
-    public bool IsDamageEase{
-        get=>_isDamageEase;
-    }
+    
     
     private bool CanNotGuard(){
         return _player.IsJump||_aB.IsAttack||_player.IsBarrier;

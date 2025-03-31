@@ -25,6 +25,10 @@ public class PlayerBase : MonoBehaviour
     private bool _isSlopeWalk=false;
     public bool _isKnockedBack=false;
     private bool _isDash=false;
+<<<<<<<< HEAD:.history/2d_action_code/Player_Script/PlayerBase_20250218182423.cs
+========
+    private bool _isLookUp=false;
+>>>>>>>> 8e0b7415c54315ee281f238d9b29c9d2f04fda16:Player_Script/PlayerBase.cs
     private bool _isSquat=false;
     private bool _isGuard=false;
     private bool _isBarrier=false;
@@ -48,7 +52,14 @@ public class PlayerBase : MonoBehaviour
         set{_bJump=value;}}
     public bool IsDash{
         get=>_isDash;}
+<<<<<<<< HEAD:.history/2d_action_code/Player_Script/PlayerBase_20250218182423.cs
 
+========
+    public bool IsLookUp{
+        get=>_isLookUp;
+        set{_isLookUp=value;}
+    }
+>>>>>>>> 8e0b7415c54315ee281f238d9b29c9d2f04fda16:Player_Script/PlayerBase.cs
     public bool IsSquat{
         get=>_isSquat;
         set{_isSquat=value;}
@@ -111,17 +122,24 @@ public class PlayerBase : MonoBehaviour
         }
         
         HitFloor();
+<<<<<<<< HEAD:.history/2d_action_code/Player_Script/PlayerBase_20250218182423.cs
         HitSlope();
         IsGroundHere();
+========
+>>>>>>>> 8e0b7415c54315ee281f238d9b29c9d2f04fda16:Player_Script/PlayerBase.cs
         FloatingFall(_isUmbrellaOpened);
         
       
     }
  
  
+<<<<<<<< HEAD:.history/2d_action_code/Player_Script/PlayerBase_20250218182423.cs
 private void OnCollisionExit2D(Collision2D other) {  
     _bJump=true;
 }    
+========
+
+>>>>>>>> 8e0b7415c54315ee281f238d9b29c9d2f04fda16:Player_Script/PlayerBase.cs
 
 private void CheckSurface(string layerName, bool isSlope)
 {
@@ -147,12 +165,19 @@ private void CheckSurface(string layerName, bool isSlope)
         {
             _isSlopeWalk = false;
         }
+<<<<<<<< HEAD:.history/2d_action_code/Player_Script/PlayerBase_20250218182423.cs
+========
+    }else if(rayHit.collider == null){
+        
+        _bJump=true;
+>>>>>>>> 8e0b7415c54315ee281f238d9b29c9d2f04fda16:Player_Script/PlayerBase.cs
     }
 }
 private void HitFloor()
 {
     CheckSurface("Floor", false);
 }
+<<<<<<<< HEAD:.history/2d_action_code/Player_Script/PlayerBase_20250218182423.cs
 private void HitSlope()
 {
     CheckSurface("Slope", true);
@@ -160,6 +185,9 @@ private void HitSlope()
 private void IsGroundHere(){
 
 }    
+========
+
+>>>>>>>> 8e0b7415c54315ee281f238d9b29c9d2f04fda16:Player_Script/PlayerBase.cs
 
     private void OnDrawGizmos()
     {
@@ -194,12 +222,20 @@ private void IsGroundHere(){
     }
     public void _OnJump(InputAction.CallbackContext context)
     {
+<<<<<<<< HEAD:.history/2d_action_code/Player_Script/PlayerBase_20250218182423.cs
         if (!context.performed || _bJump||_isGuard||_isBarrier||_aB.IsAttack) return;
+========
+        if (!context.performed || _bJump||_isGuard||_isBarrier||_aB.IsAttack||_isSquat||_isLookUp) return;
+>>>>>>>> 8e0b7415c54315ee281f238d9b29c9d2f04fda16:Player_Script/PlayerBase.cs
         _isLadderMove=false;
         _bJump=true;
         _rb.bodyType=RigidbodyType2D.Dynamic;
         _isSlopeWalk=false;
+<<<<<<<< HEAD:.history/2d_action_code/Player_Script/PlayerBase_20250218182423.cs
         AnimParameterReset();
+========
+        
+>>>>>>>> 8e0b7415c54315ee281f238d9b29c9d2f04fda16:Player_Script/PlayerBase.cs
         
         _anim.SetBool("isJump",true);
         _rb.AddForce(Vector2.up * _jumpSpeed, ForceMode2D.Impulse);
@@ -209,7 +245,11 @@ private void IsGroundHere(){
     public void _OnDash(InputAction.CallbackContext context){
         
         if(context.performed){
+<<<<<<<< HEAD:.history/2d_action_code/Player_Script/PlayerBase_20250218182423.cs
             if(_aB.IsAttack||_bJump||!_pM.IsWalk) return;
+========
+            if(_aB.IsAttack||_bJump||!_pM.IsWalk||_isSquat||_isLookUp) return;
+>>>>>>>> 8e0b7415c54315ee281f238d9b29c9d2f04fda16:Player_Script/PlayerBase.cs
             _isDash=true;
             _anim.SetBool("isDash",true);
             
@@ -309,4 +349,8 @@ private void IsGroundHere(){
     
    
     
+<<<<<<<< HEAD:.history/2d_action_code/Player_Script/PlayerBase_20250218182423.cs
 }
+========
+}
+>>>>>>>> 8e0b7415c54315ee281f238d9b29c9d2f04fda16:Player_Script/PlayerBase.cs

@@ -39,7 +39,7 @@ public class UpDownThroughFloor : MonoBehaviour
     if (hit.collider != null)
     {
         _player = hit.collider.gameObject;
-        Debug.Log("check");
+        
         return true;
     }
 
@@ -47,7 +47,7 @@ public class UpDownThroughFloor : MonoBehaviour
 }
     private void ThroughFloor(){
         if(CheckPlayer()&&_pb.IsSquat){
-            Debug.Log("true");
+            
             _collider.isTrigger=true;
         }
     }

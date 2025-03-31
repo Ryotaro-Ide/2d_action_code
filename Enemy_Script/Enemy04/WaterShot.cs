@@ -6,7 +6,7 @@ public class WaterShot : MonoBehaviour
 {
     private HP_Player _hpPlayer;
     public int _attackPoint;
-    private void OnCollisionEnter2D(Collision2D collider) {
+    private void OnTriggerEnter2D(Collider2D collider) {
         if(collider.gameObject==transform.parent.gameObject){
             return;
         }else if(collider.gameObject.tag=="Player"){

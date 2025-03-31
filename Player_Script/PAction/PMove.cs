@@ -53,7 +53,7 @@ public class PMove : MonoBehaviour
     {
         _isWalk=true;
         _inputDirection = context.ReadValue<Vector2>();
-        _rb.bodyType=RigidbodyType2D.Dynamic;
+        
         if(context.canceled){
             _isWalk=false;
         }
@@ -90,7 +90,7 @@ public class PMove : MonoBehaviour
     }
     private bool CanNotMove(){
         
-        return _pb._isKnockedBack||(_aB.IsAttack&&!_pb.IsJump);
+        return _pb.IsKnockedBack||(_aB.IsAttack&&!_pb.IsJump)||_aB.IsAttackCharging;
     }
     public void _OnLookUp(InputAction.CallbackContext context){
 

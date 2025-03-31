@@ -318,12 +318,39 @@ private void HitFloor()
     
     
     public void _OnUmbrellaSwitch(InputAction.CallbackContext context)
-    {
-        if (_aB.IsAttack) return;
+{
+    if (_aB.IsAttack) return;
 
-        _isUmbrellaOpened = !_isUmbrellaOpened;
-        _anim.runtimeAnimatorController = _isUmbrellaOpened ? _overrideController : _defaultController;
+    _isUmbrellaOpened = !_isUmbrellaOpened;
+
+    // 現在のAnimatorパラメータを保存
+    AnimatorControllerParameter[] parameters = _anim.parameters;
+    Dictionary<string, object> paramValues = new Dictionary<string, object>();
+
+    foreach (var param in parameters)
+    {
+        if (param.type == AnimatorControllerParameterType.Bool)
+            paramValues[param.name] = _anim.GetBool(param.name);
+        else if (param.type == AnimatorControllerParameterType.Float)
+            paramValues[param.name] = _anim.GetFloat(param.name);
+        else if (param.type == AnimatorControllerParameterType.Int)
+            paramValues[param.name] = _anim.GetInteger(param.name);
     }
+
+    // AnimatorController を切り替え
+    _anim.runtimeAnimatorController = _isUmbrellaOpened ? _overrideController : _defaultController;
+
+    // パラメータを復元
+    foreach (var param in paramValues)
+    {
+        if (param.Value is bool)
+            _anim.SetBool(param.Key, (bool)param.Value);
+        else if (param.Value is float)
+            _anim.SetFloat(param.Key, (float)param.Value);
+        else if (param.Value is int)
+            _anim.SetInteger(param.Key, (int)param.Value);
+    }
+}
 
     private void FloatingFall(bool _isUmbrellaOpened)
 {

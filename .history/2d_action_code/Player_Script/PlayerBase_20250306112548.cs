@@ -24,20 +24,16 @@ public class PlayerBase : MonoBehaviour
     private Rigidbody2D _rb;
     protected bool _bJump;
     private bool _isSlopeWalk=false;
-    private bool _isKnockedBack=false;
+    public bool _isKnockedBack=false;
     private bool _isDash=false;
     private bool _isLookUp=false;
     private bool _isSquat=false;
     private bool _isGuard=false;
-    private bool _isDelayGuard=false;
-    private bool _isDamageEase=false;
     private bool _isBarrier=false;
     private bool _isBarrierExpand=false;
     private bool _isOnLadder=false;
     private bool _isLadderMove=false;
-    private bool _isUmbrellaOpened=false;
-    private bool _isInvicible=false; 
-    private static bool _isFirstLoad=true;
+    private bool _isUmbrellaOpened=false; 
     private HP_Player _hpPlayer;
     private SpriteRenderer _sr;
     private BoxCollider2D _collider;
@@ -46,7 +42,6 @@ public class PlayerBase : MonoBehaviour
     private PGuard _pG;
     private PBarrier _pB;
     private AttackBase _aB;
-    private KnockBackC _kB;
     private float _rayYOffset = 0.1f;
     private Animator _anim;
     public RuntimeAnimatorController _defaultController;
@@ -67,14 +62,7 @@ public class PlayerBase : MonoBehaviour
     public bool IsGuard{
         get=>_isGuard;
         set{_isGuard=value;}}
-    public bool IsDamageEase{
-        get=>_isDamageEase;
-        set{_isDamageEase=value;}
-    }
-    public bool IsDelayGuard{
-        get=>_isDelayGuard;
-        set{_isDelayGuard=value;}
-    }
+
     public bool IsBarrier{
         get=>_isBarrier;
         set{_isBarrier=value;}}
@@ -94,10 +82,6 @@ public class PlayerBase : MonoBehaviour
     public bool IsUmbrellaOpened{
         get=>_isUmbrellaOpened;}
 
-    public bool IsKnockedBack{
-        get=>_isKnockedBack;
-        set{_isKnockedBack=value;}
-    }
     
     void Awake()
     {
@@ -112,19 +96,11 @@ public class PlayerBase : MonoBehaviour
         _pG=GetComponent<PGuard>();
         _pB=FindObjectOfType<PBarrier>();
         _aB=GetComponent<AttackBase>();
-        _kB=FindObjectOfType<KnockBackC>();
         _bJump = false;
         _anim.runtimeAnimatorController = _defaultController;
         Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"),LayerMask.NameToLayer("Enemy"),false);
-        if(!_isFirstLoad){
-            _hp=PlayerPrefs.GetInt("HP",7);
-            _energy=PlayerPrefs.GetInt("Energy",5);
-        }else{
-            HPReturn(_maxHP);
-            EnergyReturn(_maxEnergy);
-            _isFirstLoad=false;
 
-        }
+        _hp=PlayerPrefs.GetInt("HP",7);
     }
 
     void Update()
@@ -190,81 +166,18 @@ private void HitFloor()
         Gizmos.DrawWireCube(gizmoOrigin + Vector2.down * _rayYOffset, new Vector3(_collider.size.x/2f, 0.08f, 1));
     }
     public void KnockBack(GameObject enemy){
-        StartCoroutine(_kB.KnockBackMe(gameObject,enemy));
-        StartCoroutine(_kB.HitBlink(gameObject,8));
-        StartCoroutine(InvicibleTime());
+        Debug.Log("pass");
+        KnockBackC _knockback=FindObjectOfType<KnockBackC>();
+        StartCoroutine(_knockback.KnockBack(gameObject,enemy,_isKnockedBack, newbool=>_isKnockedBack=newbool));
     }
     public void KnockBackGuard(GameObject enemy){
-        StartCoroutine(_kB.KnockBackGuardMe(gameObject,enemy));
+       EnemyBase _enemyBase=enemy.GetComponent<EnemyBase>();
+        KnockBackC _knockback=FindObjectOfType<KnockBackC>();
+        StartCoroutine(_knockback.KnockBackGuard(gameObject,enemy,_isKnockedBack,newbool=>_isKnockedBack=newbool));
         
     }
-    public IEnumerator InvicibleTime(){
 
-        Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"),LayerMask.NameToLayer("Enemy"),true);
-        _isInvicible=true;
-        yield return new WaitForSeconds(2f);
-        Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"),LayerMask.NameToLayer("Enemy"),false);
-        _isInvicible=false;
-    }
-    public void DamageByOther(int amount,GameObject enemy)
-    {
-        if(gameObject!=null&&!_isInvicible){
-        int damage=amount;
-        
-        HPChange(damage);
-
-        if(_hp>0){
-            KnockBack(enemy);
-            
-        }else{
-            GameOver();
-        }
-        }
-    }
-    public void DamageByEnemy(int amount,GameObject enemy,GameObject player,bool isAttackDirect)
-    {
-        if(gameObject!=null&&!_isInvicible){
-        int damage=amount;
-        if(_isDamageEase){
-            GuardHP(amount,enemy,player,isAttackDirect);
-            return;
-        }else if(IsBarrierExpand){
-            BarrierHP(amount,enemy,player,isAttackDirect);
-            return;
-        }
-        HPChange(damage);
-
-        if(_hp>0){
-            KnockBack(enemy);
-            StartCoroutine(_kB.HitBlink(player,8));
-            StartCoroutine(InvicibleTime());
-        }else{
-            GameOver();
-        }
-        }
-    }
-    private void GuardHP(int damage,GameObject enemy,GameObject player,bool isAttackDirect){
-         damage= damage/3;
-        HPChange(damage);
-        AfterDamageProcess(enemy,player,isAttackDirect);
-        
-    }
-    private void BarrierHP(int damage,GameObject enemy,GameObject player,bool isAttackDirect){
-        damage= damage*0;
-        HPChange(damage);
-        AfterDamageProcess(enemy,player,isAttackDirect);
-    }
-    private void AfterDamageProcess(GameObject enemy,GameObject player,bool isAttackDirect){ //ガード、バリアのダメージ
-        EnemyBase _eB=enemy.GetComponent<EnemyBase>();
-        
-        if(_hp>0){
-            KnockBackGuard(enemy);
-            if(isAttackDirect) _eB.KnockBackGuardToEnemy(player);
-            StartCoroutine(InvicibleTime());
-        }else{
-            GameOver();
-        }
-    }
+    
     public void HPChange(int amount){
         _hp-=amount;
         PlayerPrefs.SetInt("HP",_hp);
@@ -272,14 +185,6 @@ private void HitFloor()
     public void HPReturn(int amount){
         _hp=amount;
         PlayerPrefs.SetInt("HP",_hp);
-    }
-    public void EnergyChange(int amount){
-        _energy-=amount;
-        PlayerPrefs.SetInt("Energy",_energy);
-    }
-    public void EnergyReturn(int amount){
-        _energy=amount;
-        PlayerPrefs.SetInt("Energy",_energy);
     }
     public void GameOver(){
         
@@ -318,12 +223,39 @@ private void HitFloor()
     
     
     public void _OnUmbrellaSwitch(InputAction.CallbackContext context)
-    {
-        if (_aB.IsAttack) return;
+{
+    if (_aB.IsAttack) return;
 
-        _isUmbrellaOpened = !_isUmbrellaOpened;
-        _anim.runtimeAnimatorController = _isUmbrellaOpened ? _overrideController : _defaultController;
+    _isUmbrellaOpened = !_isUmbrellaOpened;
+
+    // 現在のAnimatorパラメータを保存
+    AnimatorControllerParameter[] parameters = _anim.parameters;
+    Dictionary<string, object> paramValues = new Dictionary<string, object>();
+
+    foreach (var param in parameters)
+    {
+        if (param.type == AnimatorControllerParameterType.Bool)
+            paramValues[param.name] = _anim.GetBool(param.name);
+        else if (param.type == AnimatorControllerParameterType.Float)
+            paramValues[param.name] = _anim.GetFloat(param.name);
+        else if (param.type == AnimatorControllerParameterType.Int)
+            paramValues[param.name] = _anim.GetInteger(param.name);
     }
+
+    // AnimatorController を切り替え
+    _anim.runtimeAnimatorController = _isUmbrellaOpened ? _overrideController : _defaultController;
+
+    // パラメータを復元
+    foreach (var param in paramValues)
+    {
+        if (param.Value is bool)
+            _anim.SetBool(param.Key, (bool)param.Value);
+        else if (param.Value is float)
+            _anim.SetFloat(param.Key, (float)param.Value);
+        else if (param.Value is int)
+            _anim.SetInteger(param.Key, (int)param.Value);
+    }
+}
 
     private void FloatingFall(bool _isUmbrellaOpened)
 {
@@ -348,7 +280,7 @@ private void HitFloor()
     }
 }
     private float SpeedControl(){
-        if(_isGuard||_isBarrier){ //ガード
+        if(_isGuard||_isBarrier||_aB.IsAttack){ //ガード
             return 0f;
         }else if((_isUmbrellaOpened && _rb.velocity.y >= 0 && _bJump)||_isSquat){ //傘開け上昇中orしゃがみ
             return _firstSpeed/1.4f;

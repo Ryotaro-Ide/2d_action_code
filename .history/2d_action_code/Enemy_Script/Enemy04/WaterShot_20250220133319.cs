@@ -6,12 +6,11 @@ public class WaterShot : MonoBehaviour
 {
     private HP_Player _hpPlayer;
     public int _attackPoint;
-    private void OnTriggerEnter2D(Collider2D collider) {
+    private void OnCollisionEnter2D(Collision2D collider) {
         if(collider.gameObject==transform.parent.gameObject){
             return;
         }else if(collider.gameObject.tag=="Player"){
-            PlayerBase _player=FindObjectOfType<PlayerBase>();
-            _player.DamageByEnemy(_attackPoint, transform.parent.gameObject,collider.gameObject,false);
+            _hpPlayer.DamageHP(_attackPoint, transform.parent.gameObject,collider.gameObject,false);
         }
         Destroy(gameObject);
     }
